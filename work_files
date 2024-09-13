@@ -1,0 +1,67 @@
+
+@teeaco ➜ /workspaces/system-programming-public (main) $ cd work
+@teeaco ➜ /workspaces/system-programming-public/work (main) $ ls -al
+total 16
+drwxrwxrwx+ 4 codespace codespace 4096 Sep 13 16:51  .
+drwxrwxrwx+ 6 codespace root      4096 Sep 12 14:04  ..
+drwxrwxrwx+ 2 codespace codespace 4096 Sep 13 16:50 'Бронникова Мария Евгеньевна'
+drwxrwxrwx+ 2 codespace codespace 4096 Sep 13 16:50 'Лабораторная работа №1'
+@teeaco ➜ /workspaces/system-programming-public/work (main) $ chmod ug+rwx "Лабораторная работа №1"
+@teeaco ➜ /workspaces/system-programming-public/work (main) $ chmod o+w "Лабораторная работа №1"
+@teeaco ➜ /workspaces/system-programming-public/work (main) $ ls -al
+total 16
+drwxrwxrwx+ 4 codespace codespace 4096 Sep 13 16:51  .
+drwxrwxrwx+ 6 codespace root      4096 Sep 12 14:04  ..
+drwxrwxrwx+ 2 codespace codespace 4096 Sep 13 16:50 'Бронникова Мария Евгеньевна'
+drwxrwxrwx+ 2 codespace codespace 4096 Sep 13 16:50 'Лабораторная работа №1'
+
+@teeaco ➜ /workspaces/system-programming-public/work (main) $ chmod o-rx "Лабораторная работа №1"
+
+@teeaco ➜ /workspaces/system-programming-public/work (main) $ chmod u-rx "Бронникова Мария Евгеньевна"
+@teeaco ➜ /workspaces/system-programming-public/work (main) $ ls -al
+total 16
+drwxrwxrwx+ 4 codespace codespace 4096 Sep 13 16:51  .
+drwxrwxrwx+ 6 codespace root      4096 Sep 12 14:04  ..
+d-w--w--w-+ 2 codespace codespace 4096 Sep 13 16:50 'Бронникова Мария Евгеньевна'
+drwxrwx-w-+ 2 codespace codespace 4096 Sep 13 16:50 'Лабораторная работа №1'
+@teeaco ➜ /workspaces/system-programming-public/work (main) $ chmod go-w "Бронникова Мария Евгеньевна"
+
+drwxrwxrwx+ 4 codespace codespace 4096 Sep 13 16:51  .
+drwxrwxrwx+ 6 codespace root      4096 Sep 12 14:04  ..
+d-w-------+ 2 codespace codespace 4096 Sep 13 16:50 'Бронникова Мария Евгеньевна'
+drwxrwx-w-+ 2 codespace codespace 4096 Sep 13 16:50 'Лабораторная работа №1'
+
+@teeaco ➜ /workspaces/system-programming-public (main) $ touch "Text @1"
+@teeaco ➜ /workspaces/system-programming-public (main) $ touch "Text $2"
+@teeaco ➜ /workspaces/system-programming-public (main) $ touch "Text #3"
+
+@teeaco ➜ /workspaces/system-programming-public (main) $ echo -e "Птица говорун отличается умом и сообразительностью! \nОтличается умом, отличается сообразительностью..." > work/"Text @1"
+
+@teeaco ➜ /workspaces/system-programming-public (main) $ cp work/"Text @1" work/"Text \$2"
+@teeaco ➜ /workspaces/system-programming-public (main) $ chmod +rwx work/"Бронникова Мария Евгеньевна"
+@teeaco ➜ /workspaces/system-programming-public (main) $ cp work/"Text @1" work/"Бронникова Мария Евгеньевна"
+
+@teeaco ➜ /workspaces/system-programming-public (main) $ mv work/"Text \$2" work/"Лабораторная работа №1"
+
+@teeaco ➜ /workspaces/system-programming-public (main) $ gzip work/"Text @1"
+@teeaco ➜ /workspaces/system-programming-public (main) $ gzip work/"Text #3"
+
+@teeaco ➜ /workspaces/system-programming-public (main) $ tar -cf 'MyAchiv' work/Text\ \@1.gz work/Text\ \#3.gz
+@teeaco ➜ /workspaces/system-programming-public (main) $ tar -xf MyAchiv
+
+@teeaco ➜ /workspaces/system-programming-public (main) $ gzip -d work/Text\ @1
+@teeaco ➜ /workspaces/system-programming-public (main) $ gzip -d work/Text\ #3
+
+@teeaco ➜ /workspaces/system-programming-public (main) $ head -n 1 work/'Text @1' > work/'Text #3'
+
+@teeaco ➜ /workspaces/system-programming-public (main) $ echo -e "\nБудь осторожен! Преступник вооружен!" >> work/Te
+xt\ #3
+
+ $ tac work/"Бронникова Мария Евгеньевна"/'Text @1' >> work/"Б
+ронникова Мария Евгеньевна"/"Result_one"
+
+@teeaco ➜ /workspaces/system-programming-public (main) $ mv work/"Бронникова Мария Евгеньевна"/Result_one work/"Бронникова Мария Евгеньевна"/Result_two
+
+@teeaco ➜ /workspaces/system-programming-public (main) $ cp work/'Бронникова Мария Евгеньевна'/'Text @1' work/'Лабор
+аторная работа №1'/'Result_3'
+
