@@ -65,3 +65,5 @@ xt\ #3
 @teeaco ➜ /workspaces/system-programming-public (main) $ cp work/'Бронникова Мария Евгеньевна'/'Text @1' work/'Лабор
 аторная работа №1'/'Result_3'
 
+@teeaco ➜ /workspaces/system-programming-public (main) $ cat /proc/cpuinfo >> work/'Лабораторная работа №1'/'Result_
+3'
