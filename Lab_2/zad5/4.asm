@@ -1,17 +1,15 @@
 format ELF64
 
 public _start
-public exit
 public print
 
-section '.bss' writable
   num dq 568093600
   ;str db 0xA   
   res dq 0            
   ten dq 10                 
   place db 1          ; Место для временного хранения символа для вывода
 
-section '.text' executable
+
   _start:
     mov rax, [num]      
     xor rbx, rbx            
@@ -30,7 +28,9 @@ section '.text' executable
 
     mov eax, 60             
     xor edi, edi        
-    call exit                  
+    mov eax, 1;exit
+    mov ebx, 0
+    int 0x80                
 
 print:
     mov rax, [res]       
@@ -75,7 +75,3 @@ print:
         syscall
         ret
 
-exit:
-  mov eax, 1
-  mov ebx, 0
-  int 0x80

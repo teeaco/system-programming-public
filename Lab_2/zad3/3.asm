@@ -7,14 +7,14 @@ public print
 section '.bss' writable
   plus db 15 dup ('+')          
   newline db 15 dup (0xA)  
-  place db 1
-  num dq 0                
+  place db 1      ;временное хранение символа
+  num dq 0        ;счетчик        
 
 section '.text' executable
   _start:
-    xor rsi, rsi    
+    xor rsi, rsi    ;счетчик для работы со строкой
     .iter1:              
-      xor rdi, rdi  
+      xor rdi, rdi  ;счетчик для плюсиков
 
       mov rbx, [num]
       inc rbx
@@ -23,7 +23,7 @@ section '.text' executable
       .iter2:
         mov al, [plus + rdi]   
         call print       
-        inc rdi                
+        inc rdi              ;для след символа  
         cmp rdi, [num]           
         jne .iter2             
 
@@ -32,7 +32,7 @@ section '.text' executable
       call print           
 
       inc rsi                  
-      cmp rsi, 7                
+      cmp rsi, 7     ;ждя колва строк           
       jne .iter1             
     call exit                  
 
