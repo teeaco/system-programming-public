@@ -15,7 +15,6 @@ section '.bss' writable
 section '.text' executable
 
 _start:
-    mov r9, 0 
     mov rax, 0
     mov rdi, 0
     mov rsi, msg
@@ -34,7 +33,6 @@ _start:
         mov rdi, 0
         call number_str
         call print_str
-        inc r9
         call new_line
         minus:
         pop rax
@@ -43,15 +41,6 @@ _start:
         
             dec rax
         jmp itera
-   xor rax, rax
-   xor rdx, rdx
-   mov rax, rdx
-   mov rsi, r9
-   call number_str
-   call print_str
-   call new_line
-   call exit
-
 
 func:
     push rax
@@ -83,6 +72,3 @@ func:
 pizdarulyu:
     mov rdi, 0
     jmp tutu
-
-answer:
-   

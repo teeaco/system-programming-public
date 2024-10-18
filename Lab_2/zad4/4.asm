@@ -1,5 +1,6 @@
 format ELF64
 
+;include "func.asm"
 public _start
 public exit
 public print
@@ -27,7 +28,7 @@ section '.text' executable
 
 
     call print       
-
+    call newline
     mov eax, 60             
     xor edi, edi        
     call exit                  

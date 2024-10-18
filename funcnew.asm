@@ -102,6 +102,7 @@ str_number:
 ;input rax - number
 ;rsi -address of begin of string
 number_str:
+  push rax
   push rbx
   push rcx
   push rdx
@@ -127,6 +128,7 @@ number_str:
   pop rdx
   pop rcx
   pop rbx
+  pop rax
   ret
 
 
