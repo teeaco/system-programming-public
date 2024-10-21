@@ -20,40 +20,42 @@ _start:
    mov rsi, msg
    mov rdx, 255
    syscall
-
+    mov rsi, msg
    xor rdx, rdx
    xor rax, rax
    call str_number
    mov [n], rax
-   mov rax, [n]
+    xor rdx, rdx
    mov rbx, 10
    div rbx
-   mov [ost], rbx
-   mov rdx, 0
+   mov [ost], rdx
+   mov rbx, 0
    checkost:
         mov rcx, rax
+        xor rdx, rdx
         mov rbx, 10
-        div rbx ;ost in rbx
-        cmp [ost], rbx
+        div rbx ;ost in rdx
+        cmp [ost], rdx
         jnae ohno
-        inc rdx
-        mov [ost], rbx
+        inc rbx
+        mov [ost], rdx
+        mov rcx, rax
+        xor rax, rax
         cmp rax, 0
         je ohyes
     jmp checkost
 
     ohno:
-        mov rax, 4
-        mov rbx, 1
-        mov rcx, [no]
-        mov rdx, 8
-        syscall
+        mov rsi, no
+        call print_str
+        call new_line
+        call exit
 
     ohyes:
-        mov rax, 4
-        mov rbx, 1
-        mov rcx, [yes]
-        mov rdx, 8
-        syscall
+        mov rsi, yes
+        call print_str
+        call new_line
+        
+        call exit
 
    call exit

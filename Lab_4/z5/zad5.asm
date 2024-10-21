@@ -32,25 +32,24 @@ _start:
         cmp rdi, 0
         je minus
         mov rdi, 0
-        call number_str
-        call print_str
+        ;call number_str
+        ;call print_str
         inc r9
-        call new_line
+        ;call new_line
         minus:
         pop rax
         cmp rax, 0
-        je exit
+        je co
         
             dec rax
         jmp itera
-   xor rax, rax
-   xor rdx, rdx
-   mov rax, rdx
-   mov rsi, r9
-   call number_str
-   call print_str
-   call new_line
-   call exit
+    co:
+        mov rax, r9
+        xor rdx, rdx
+        call number_str
+        call print_str
+        call new_line
+        call exit
 
 
 func:
@@ -84,5 +83,5 @@ pizdarulyu:
     mov rdi, 0
     jmp tutu
 
-answer:
+
    
