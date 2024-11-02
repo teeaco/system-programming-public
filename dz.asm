@@ -6,14 +6,18 @@ format elf64
 	;public _start
 	public free_memory
 	public create_array
-
+	public randi_array
+	public ranint
 	include 'func.asm'
 
 	
 	section '.data' writable
+	f  db "/dev/urandom", 0
 
 	section '.bss' writable
 	volume rq 1
+	number rq 1
+    place rb 100
 
 	array_begin rq 1
 	count rq 1
@@ -32,6 +36,19 @@ create_array:
 	syscall
 	ret
 
+randi_array:
+	xor rcx,rcx
+	
+	.l1:
+	call ranint ;rax = random
+	mov QWORD [rdi+rcx*8], rax 
+	inc rcx
+	cmp rcx, rsi
+
+	jne .l1
+	ret
+
+
 
 free_memory:
 	mov rsi, [volume]
@@ -39,3 +56,27 @@ free_memory:
 	syscall
 
 	ret
+
+ranint:
+	push rdi
+	push rcx
+	push rsi
+	mov rdi, f
+    mov rax, 2 
+    mov rsi, 0o
+    syscall 
+
+    mov r8, rax
+
+    mov rax, 0 ;
+    mov rdi, r8
+    mov rsi, number
+    mov rdx, 1
+    syscall
+    
+	mov rax, [number]
+	pop rsi
+	pop rcx
+	pop rdi
+	ret 
+   

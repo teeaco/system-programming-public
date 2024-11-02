@@ -1,31 +1,46 @@
 format elf64
+public _start
 
-	public create_array
-	public free_memory
+include 'func.asm'
 
-	section '.data' writable
 
-	section '.bss' writable
+section '.data' writable
 
-	array_begin rq 1
-	count rq 1
+f  db "/dev/urandom",0
+
+section '.bss' writable
+
+  number rq 1
+  place rb 100
+
 section '.text' executable
-create_array:
-	mov [count], rdi
-	;; Получаем начальное значение адреса кучи
-	xor rdi,rdi
-	mov rax, 12
-	syscall
-	mov [array_begin], rax
-	mov rdi, [array_begin]
-	add rdi, [count]
-	mov rax, 12
-	syscall
-	mov rax, array_begin
-	ret
 
-free_memory:
-	xor rdi,[array_begin]
-	mov rax, 12
-	syscall
-	ret
+_start:
+   mov rdi, f
+   mov rax, 2 
+   mov rsi, 0o
+   syscall 
+   cmp rax, 0 
+   jl .l1 
+   mov r8, rax
+
+   mov rax, 0 ;
+   mov rdi, r8
+   mov rsi, number
+   mov rdx, 1
+   syscall
+   
+   mov rax, [number]
+   mov rsi, place
+   ;;rsi
+   call number_str
+   call print_str
+   call new_line
+   
+   mov rax, 3
+   mov rdi, r8
+   syscall
+
+
+.l1:
+  call exit

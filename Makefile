@@ -2,7 +2,7 @@ asm: test.asm
 		fasm dz.asm
 
 c: asm dz.c
-		gcc dz.c dz.o -o myprog
+		gcc dz.c dz.o -static -o myprog
 
 run: c myprog
 		./myprog
