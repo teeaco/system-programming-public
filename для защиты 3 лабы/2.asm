@@ -5,7 +5,7 @@ a dq 0
 b dq 0
 c dq 0
 chis dq 0
-include 'func.asm'
+include 'func1.asm'
 
 
 _start:

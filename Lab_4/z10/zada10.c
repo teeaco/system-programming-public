@@ -1,20 +1,14 @@
 #include <stdio.h>
 #include <string.h>
 
-#define MAX_ATTEMPTS 5
+#define MAX 5
 
 int main() {
     char correct_password[50];
     char input[50];
     int attempts = 0;
-
-    // Ввод правильного пароля изначально
-    printf("Введите пароль для настройки: ");
     scanf("%s", correct_password);
-
-    // Цикл для проверки попыток ввода
-    while (attempts < MAX_ATTEMPTS) {
-        printf("Введите пароль для входа: ");
+    while (attempts < MAX) {
         scanf("%s", input);
 
         if (strcmp(input, correct_password) == 0) {

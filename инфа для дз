@@ -1,0 +1,18 @@
+Для создания анонимного отображения в память вместо файлового дескриптора указывают 
+значение -1, также флаги устанавливают в значение MAP_ANONYMOUS|MAP_PRIVATE.
+
+Соответсвие названиям флагом числовых значений задается во все том же заголовочном файле mmap.h.
+
+MAP_PRIVATE        0x02                /* Changes are private.  */
+#ifdef __USE_MISC
+# define MAP_TYPE        0x0f                /* Mask for type of mapping.  */
+#endif
+
+/* Other flags.  */
+#define MAP_FIXED        0x10                /* Interpret addr exactly.  */
+#ifdef __USE_MISC
+# define MAP_FILE        0
+# define MAP_ANONYMOUS        0x20                /* Don't use a file.  */
+# define MAP_ANON        MAP_ANONYMOUS
+# define MAP_32BIT        0x40                /* Only give out 32-bit addresses.  */
+

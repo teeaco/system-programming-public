@@ -1,15 +1,47 @@
-print:
-    .loop:
-    mov al, [parol+rdx]
+;print:
+ ;   .loop:
+  ;  mov al, [parol+rdx]
+   ; cmp rax, 0
+    ;je .next
+    ;inc rdx
+    ;jmp .loop
+    ;.next:
+    ;mov rax, 1
+    ;mov rdi, 1
+    ;mov rsi, parol
+    ;syscall
+;The function converts the nubmer to string
+;input rax - number
+;rsi -address of begin of string
+number_str:
+  push rax
+  push rbx
+  push rcx
+  push rdx
+  xor rcx, rcx
+  mov rbx, 10
+  .loop_1:
+    xor rdx, rdx
+    div rbx
+    add rdx, 48
+    push rdx
+    inc rcx
     cmp rax, 0
-    je .next
+    jne .loop_1
+  xor rdx, rdx
+  .loop_2:
+    pop rax
+    mov byte [rsi+rdx], al
     inc rdx
-    jmp .loop
-    .next:
-    mov rax, 1
-    mov rdi, 1
-    mov rsi, parol
-    syscall
+    dec rcx
+    cmp rcx, 0
+  jne .loop_2
+  mov byte [rsi+rdx], 0   
+  pop rdx
+  pop rcx
+  pop rbx
+  pop rax
+  ret
 
 
 str_symbol:
@@ -178,4 +210,40 @@ str_to_int:
     pop rbx
     pop rsi
   ret
+
+;Function converting the string to the number
+;input rsi - place of memory of begin string
+;output rax - the number from the string
+str_number:
+    push rcx
+    push rbx
+
+    xor rax,rax
+    xor rcx,rcx
+.loop:
+    xor     rbx, rbx
+    mov     bl, byte [rsi+rcx]
+    cmp     bl, 48
+    jl      .finished
+    cmp     bl, 57
+    jg      .finished
+
+    sub     bl, 48
+    add     rax, rbx
+    mov     rbx, 10
+    mul     rbx
+    inc     rcx
+    jmp     .loop
+
+.finished:
+    cmp     rcx, 0
+    je      .restore
+    mov     rbx, 10
+    div     rbx
+
+.restore:
+    pop rbx
+    pop rcx
+    ret
+
 
