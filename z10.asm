@@ -84,7 +84,7 @@ next_char:
   push rdx
 ;rdx len, rsi start
  call revert_rsi
-     call print_str
+     ;call print_str
  pop rdx
  inc rdx
   call write_sentence
@@ -101,7 +101,7 @@ revert_rsi:
   
     ;rdx = len
     xor rcx,rcx
-    call new_line
+    ;call new_line
     
     .iter:
       mov rbx, rdx
