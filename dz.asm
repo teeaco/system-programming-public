@@ -3,47 +3,39 @@
 ;Для проверки мы также печатаем из этой памяти.
 
 format elf64
-	public _start
+	;public _start
+	public free_memory
+	public create_array
+
 	include 'func.asm'
 
-	volume = 10000
+	
+	section '.data' writable
+
+	section '.bss' writable
+	volume rq 1
+
+	array_begin rq 1
+	count rq 1
 	section '.text' executable
 	
-_start:
+create_array:
 	;; выполняем анонимное отображение в память
+	mov [volume], rdi
 	mov rdi, 0    ;начальный адрес выберет сама ОС
-	mov rsi, volume ;задаем размер области памяти
+	mov rsi, [volume] ;задаем размер области памяти
 	mov rdx, 0x3  ;совмещаем флаги PROT_READ | PROT_WRITE
 	mov r10,0x22  ;задаем режим MAP_ANONYMOUS|MAP_PRIVATE
 	mov r8, -1   ;указываем файловый дескриптор null
 	mov r9, 0     ;задаем нулевое смещение
 	mov rax, 9    ;номер системного вызова mmap
 	syscall
+	ret
 
-	mov rsi, rax  ;Сохраняем адрес памяти анонимного отображения
-	mov rax, 0
-	mov rdi, 0
-	mov rdx,  1000
-	syscall
-	xor rcx, rcx
-	.loop:
-	mov al, [rsi+rcx]
-	inc rcx
-	cmp rax, 0x0A
-	jne .loop
-	dec rcx
-	mov byte [rsi+rcx], 0
 
-	call new_line
-
-	call print_str
-
-	call new_line
-
-	;; выполняем системный вызов munmap, освобождая память
-	mov rdi, rsi
-	mov rsi, volume
+free_memory:
+	mov rsi, [volume]
 	mov rax, 11
 	syscall
 
-	call exit
+	ret

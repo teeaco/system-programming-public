@@ -1,7 +1,7 @@
 format elf64
 public _start
 
-include 'func.asm'
+include 'func.asm' ;;я не доделдала второй файл тоже через ввод подается
 
 section '.bss' writable
   buffer rb 100               ; Буфер для чтения строки из файла
