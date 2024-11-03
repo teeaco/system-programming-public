@@ -5,9 +5,12 @@
 format elf64
 	;public _start
 	public free_memory
+	public chet_count
 	public create_array
 	public randi_array
 	public ranint
+	public sum_array
+	public reverse_array
 	include 'func.asm'
 
 	
@@ -22,7 +25,78 @@ format elf64
 	array_begin rq 1
 	count rq 1
 	section '.text' executable
+
+
+chet_count:
+    xor rcx, rcx        
+    xor rdx, rdx        
+
+.loop:
+    cmp rdx, rsi        
+    jge .done           ; если индекс >= размер массива, выходим из цикла
+
+    mov rax, [rdi + rdx * 8] 
+    test rax, 1         ; проверяем младший бит числа
+    jnz .not_chet       ;если младший бит установлен, число нечётное
+
+    inc rcx             
+
+.not_chet:
+    inc rdx             
+    jmp .loop           
+
+.done:
+    mov rax, rcx        
+    ret
+
+
+reverse_array:
+    mov rcx, rsi            
+    shr rcx, 1              ; делим размер на 2, чтобы пройтись до середины массива
+    xor rdx, rdx            
+
+.loop:
+    cmp rdx, rcx            ; если индекс достиг половины размера, выходим из цикла
+    jge .done
+
+    ;адрес элемента с конца массива
+    mov rax, rsi            
+    sub rax, rdx            ; rax = rsi - rdx
+    dec rax                 ; rax = rsi - rdx - 1
+    shl rax, 3              ; умножаем на 8, чтобы получить смещение в байтах
+
+    ; элементы для обмена
+    mov rbx, [rdi + rdx * 8]     ; элемент с начала массива
+    mov r8, [rdi + rax]          ; симметричный элемент с конца массива
+
+    ; Обмениваем местами
+    mov [rdi + rdx * 8], r8      ; элемент с конца в начало
+    mov [rdi + rax], rbx         ;элемент с начала в конец
+
+    inc rdx                     
+    jmp .loop                   
+
+.done:
+    ret
 	
+sum_array:
+    mov rcx, rsi    
+    xor rax, rax    
+    xor rdx, rdx    
+    
+.loop:
+    cmp rdx, rcx    ; сравниваем текущий индекс с размером массива
+    jge .done       
+
+    add rax, [rdi + rdx*8] ; добавляем элемент массива к сумме
+    inc rdx                
+    jmp .loop              
+
+.done:
+    ret                    ; возвращаем сумму в rax
+
+	
+
 create_array:
 	;; выполняем анонимное отображение в память
 	mov [volume], rdi
