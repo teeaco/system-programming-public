@@ -1,0 +1,97 @@
+format elf64
+public _start
+
+include 'func.asm' 
+
+section '.bss' writable
+  buffer rb 100               ; Буфер для чтения строки из файла
+  sent_buf rb 100             ; Буфер для предложения
+  buf64 rb 64
+  buf2 rb 64
+  stro dq 0
+  swing_buf rb 100            ; Буфер для символов в маятниковом порядке
+  buf_index dq 0              ; Индекс для буфера swing_buf
+  rev_buf rb 100
+
+section '.data' writable
+  endfile db '10e', 0         ; Имя второго файла для записи
+
+section '.text' executable
+
+_start:
+  ;; Открываем первый файл для чтения
+  mov rdi, [rsp+16]            ; Имя первого файла из аргументов командной строки
+  mov rax, 2                  ; Системный вызов open
+  mov rsi, 0                  ; O_RDONLY (режим только для чтения)
+  syscall
+  cmp rax, 0
+  jl l1
+
+  mov r8, rax                 ; Сохраняем дескриптор первого файла в r8
+
+  ;; Открываем второй файл для записи
+  mov rdi, [rsp + 24]         ; Имя второго файла
+  mov rax, 2                  ; Системный вызов open
+  mov rsi, 577                ; O_WRONLY | O_CREAT | O_TRUNC (для записи, создать, если не существует)
+  mov rdx, 777o               ; Права доступа к файлу
+  syscall
+  cmp rax, 0
+  jl l1
+  mov r10, rax                ; Сохраняем дескриптор второго файла в r10
+  mov r9, [rsp + 32]
+
+  ;; Читаем содержимое первого файла в buffer
+  mov rax, 0                  ; Системный вызов read
+  mov rdi, r8                 ; Дескриптор первого файла
+  mov rsi, buffer             ; Куда читать (в buffer)
+  mov rdx, 100                ; Сколько читать (до 100 байт)
+  syscall
+  mov r9, rax                 ; Сохраняем количество прочитанных байт в r9
+
+  ;; Устанавливаем начальные значения для k и m из аргументов командной строки
+  mov rbx, [rsp + 32]         ; Загружаем k (начальная позиция)
+  mov rcx, [rsp + 40]         ; Загружаем m (длина для маятникового порядка)
+
+  ;; Логика для маятникового чтения и записи
+  mov rsi, buffer             ; Устанавливаем rsi на начало буфера
+  mov rdi, swing_buf          ; Устанавливаем rdi на буфер для маятникового порядка
+  mov rdx, rcx                ; Длина для записи
+  xor rax, rax                ; Обнуляем регистр для счетчика
+
+maiatnik_loop:
+  cmp rax, rdx                ; Если все символы записаны, выходим
+  je write_sentence
+  cmp rbx, rax                ; Если счетчик равен начальной позиции k
+  je copy_char
+  inc rax
+  jmp maiatnik_loop
+
+copy_char:
+  mov al, [rsi + rbx]         ; Читаем символ из позиции k
+  mov [rdi + buf_index], al   ; Записываем символ в буфер swing_buf
+  inc buf_index               ; Увеличиваем индекс в swing_buf
+  inc rbx                     ; Переходим к следующему символу
+  inc rax                     ; Увеличиваем счетчик
+  jmp maiatnik_loop
+
+  ;; Завершаем программу
+l1:
+  call exit
+
+write_sentence:
+  push rdi
+  push rsi
+  push rax
+  push rcx
+  push rdx
+  ;call print_str
+
+  mov rax, 1                  ; Системный вызов write
+  mov rdi, r10                ; Дескриптор второго файла
+  syscall
+  pop rdx
+  pop rcx
+  pop rax
+  pop rsi
+  pop rdi
+  ret
