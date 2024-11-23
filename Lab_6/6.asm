@@ -235,19 +235,19 @@ continue_movement:
 	mov rdi, 1
 	call timeout
 	call getch
-	cmp rax, 'v'
-	je .decrease_speed
 	cmp rax, 'b'
+	je .decrease_speed
+	cmp rax, 'v'
 	je next
 	jmp mloop
 	
-	
+
 .decrease_speed:
 	mov rdi, [speed]
-	mov rax, 100
+	mov rax, 1000
 	add rdi, rax             ;; Увеличиваем скорость (уменьшаем задержку)
 	mov [speed], rax
-	cmp rdi, 1000
+	cmp rdi, 10000
 	je .null
 	.null:
 		mov [speed], 1 
