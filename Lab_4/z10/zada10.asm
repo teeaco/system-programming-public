@@ -8,13 +8,16 @@ format elf64
 public _start
 include "funcnew.asm"
 
+section '.data' writable
+   wrong db "Неверный пароль", 0xA,  0
+   right db "Вошли", 0xA, 0
+   fail db "Неудача", 0xA, 0
+
 section '.bss' writable
    place rb 255
    parol dq ?
    try dq ?
-   wrong db "Неверный пароль", 0xA,  0
-   right db "Вошли", 0xA, 0
-   fail db "Неудача", 0xA, 0
+
 
 section '.text' executable
 

@@ -8,10 +8,10 @@ public _start
 include "funcnew.asm"
 
 section '.bss' writable
-   place db "HHHHHHHHH", 0
+   place rb 15
    msg rb 255
-   n dq 0
-   num dq 0
+   n rq 0
+   num rq 0
 section '.text' executable
 
 _start:

@@ -5,13 +5,16 @@ format elf64
 public _start
 include "funcnew.asm"
 
-section '.bss' writable
+section '.data' writable
    place db ";oiuygf", 0
    no db "no", 0
    yes db "yes", 0
-   msg rb 255
    n dq 0
    ost dq 0
+   
+section '.bss' writable
+   msg rb 255
+
 section '.text' executable
 
 _start:

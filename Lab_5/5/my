@@ -1,0 +1,267 @@
+format elf64
+public _start
+
+include 'func.asm' 
+
+section '.bss' writable
+  buffer rb 100               ; Буфер для чтения строки из файла
+  sent_buf rb 100             ; Буфер для предложения
+  buf64 rb 64
+  buf2 rb 64
+  stro dq 0
+  swing_buf rb 10format elf64
+public _start
+
+include 'func.asm' 
+
+section '.bss' writable
+  buffer rb 100               ; Буфер для чтения строки из файла
+  rev_buf rb 1                ; Буфер для одного символа
+  buf64 rb 64
+  position dq 0          ; Текущая позиция k
+  step_count dq 0            ; Счетчик шагов маятникового движения
+  m dq 0             ; Максимальное количество шагов m
+  plumin db 1             ; Направление (1 для вперед, -1 для назад)
+  file1 dq 0                 ; Дескриптор первого файла
+  file2 dq 0                 ; Дескриптор второго файла
+  bytes_read dq 0            ; Количество прочитанных байт
+  temp_char db 0             ; Временная переменная для символа
+  temp_result dq 0           ; Временная переменная для расчетов
+
+
+section '.data' writable
+  endfile db '10e', 0         ; Имя второго файла для записи
+
+section '.text' executable
+
+_start:
+  ;; Открываем первый файл для чтения
+  mov rdi, [rsp+16]           ; Имя первого файла из аргументов командной строки
+  mov rax, 2                  ; Системный вызов open
+  mov rsi, 0o                 ; O_RDONLY (режим только для чтения)
+  syscall
+  cmp rax, 0
+  jl l1
+  mov r8, rax                 ; Сохраняем дескриптор первого файла в r8
+
+  ;; Открываем второй файл для записи
+  mov rdi, [rsp + 24]         ; Имя второго файла
+  mov rax, 2                  ; Системный вызов open
+  mov rsi, 577                ; O_WRONLY | O_CREAT | O_TRUNC
+  mov rdx, 777o               ; Права доступа к файлу
+  syscall
+  cmp rax, 0
+  jl l1
+  mov r10, rax                ; Сохраняем дескриптор второго файла в r10
+
+  ;; Читаем содержимое первого файла в buffer
+  mov rax, 0                  ; Системный вызов read
+  mov rdi, r8                 ; Дескриптор первого файла
+  mov rsi, buffer             ; Куда читать (в buffer) 
+  mov rdx, 100                ; Сколько читать (до 100 байт)
+  syscall
+  mov r9, rax                 ; Сохраняем количество прочитанных байт в r9
+
+  ;; Устанавливаем начальные значения для k и m из аргументов командной строки
+  mov rbx, [rsp + 32]         ; Загрузка k (начальная позиция)
+  mov rcx, [rsp + 40]         ; Загрузка m (длина для маятникового порядка)
+
+  ;; Инициализация начального индекса для маятникового перемещения
+  xor rdx, rdx                ; Счетчик шагов
+  ;mov byte [rbx], 'A'
+  call write_char
+next_char:
+  ;; Вычисляем новую позицию для символа
+  mov rsi, rbx                ; k в rsi
+
+  call calculate_position     ; Получаем новую позицию в rax
+  mov rsi, rax
+  push rsi
+  mov rsi, buf64 ;точно пустой буфер!
+  ;call new_line
+  returar:
+    push rsi
+  mov rsi, buf64
+; rax=наше число
+  call number_str
+  call print_str
+  call new_line
+  pop rsi
+
+  cmp rax, 0
+  jl end_swing                ; Если позиция меньше 0, завершить
+  cmp rax, r9
+  jge end_swing               ; Если позиция >= r9, завершить
+
+  ;; Читаем символ из buffer по новой позиции
+  mov rsi, buffer
+
+
+  movzx rbx, byte [rsi + rax] ; Читаем символ по позиции из rax в rbx &&&&?????????/
+
+
+  ;; Сохраняем символ в переменную (rev_buf)
+  mov [rev_buf], bl           ; Сохраняем символ в rev_buf
+  ;mov byte [rev_buf], 'A'  ; Для проверки
+  
+  
+  ;; Записываем символ в файл
+  call write_char             ; Записываем символ в файл
+
+  ;; Обновляем индекс и продолжаем, пока не обработаем все символы
+  inc rdx
+  cmp rdx, rcx
+  jl next_char
+
+end_swing:
+  call exit
+
+
+
+calculate_position:
+  push r10
+  push rdx
+  mov rdx, 1              ; Скачок
+  mov r10, 0              ; Если r10 = 0 -> k++, иначе k--
+  bam:
+  cmp r10, 0
+  je plusik
+  jne minusik
+
+ogrizok:
+  cmp r10, 0
+  inc rdx
+  cmp rdx, rcx
+  ; Отладочный вывод rdx
+  ;mov rax, rdx            ; Копируем значение rdx в rax для вывода
+  call print_int
+  ;call new_line
+  pop rdx
+  pop r10
+  je returar
+
+plusik:
+  mov r10, 1
+  mov rax, rsi            ; rax = k (значение из rsi)
+  add rax, rdx
+    ; Отладочный вывод rax
+    call print_int
+    ;call new_line
+    push rsi
+    mov rsi, buf64          ; Пустой буфер для вывода
+    call number_str         ; Преобразование rax в строку
+    pop rsi
+  jmp ogrizok
+
+minusik:
+  mov r10, 0
+  mov rax, rsi            ; rax = k (значение из rsi)
+  sub rax, rdx
+    ; Отладочный вывод rax
+    call print_int
+    ;call new_line
+    push rsi
+    mov rsi, buf64          ; Пустой буфер для вывода
+    call number_str         ; Преобразование rax в строку
+    pop rsi
+  jmp ogrizok
+
+
+write_char:
+    ;mov [rev_buf], 'Q'
+    mov rax, 1              ; Системный вызов write
+    mov rdi, r10            ; Дескриптор второго файла (r10)
+    mov rsi, rev_buf        ; Адрес rev_buf
+    call print_str
+    mov rdx, 1              ; Количество байт для записи (1 байт)
+    syscall                 ; Выполняем системный вызов
+    ret
+
+l1:
+  call exit
+0            ; Буфер для символов в маятниковом порядке
+  buf_index dq 0              ; Индекс для буфера swing_buf
+  rev_buf rb 100
+
+section '.data' writable
+  endfile db '10e', 0         ; Имя второго файла для записи
+
+section '.text' executable
+
+_start:
+  ;; Открываем первый файл для чтения
+  mov rdi, [rsp+16]            ; Имя первого файла из аргументов командной строки
+  mov rax, 2                  ; Системный вызов open
+  mov rsi, 0                  ; O_RDONLY (режим только для чтения)
+  syscall
+  cmp rax, 0
+  jl l1
+
+  mov r8, rax                 ; Сохраняем дескриптор первого файла в r8
+
+  ;; Открываем второй файл для записи
+  mov rdi, [rsp + 24]         ; Имя второго файла
+  mov rax, 2                  ; Системный вызов open
+  mov rsi, 577                ; O_WRONLY | O_CREAT | O_TRUNC (для записи, создать, если не существует)
+  mov rdx, 777o               ; Права доступа к файлу
+  syscall
+  cmp rax, 0
+  jl l1
+  mov r10, rax                ; Сохраняем дескриптор второго файла в r10
+  mov r9, [rsp + 32]
+
+  ;; Читаем содержимое первого файла в buffer
+  mov rax, 0                  ; Системный вызов read
+  mov rdi, r8                 ; Дескриптор первого файла
+  mov rsi, buffer             ; Куда читать (в buffer)
+  mov rdx, 100                ; Сколько читать (до 100 байт)
+  syscall
+  mov r9, rax                 ; Сохраняем количество прочитанных байт в r9
+
+  ;; Устанавливаем начальные значения для k и m из аргументов командной строки
+  mov rbx, [rsp + 32]         ; Загружаем k (начальная позиция)
+  mov rcx, [rsp + 40]         ; Загружаем m (длина для маятникового порядка)
+
+  ;; Логика для маятникового чтения и записи
+  mov rsi, buffer             ; Устанавливаем rsi на начало буфера
+  mov rdi, swing_buf          ; Устанавливаем rdi на буфер для маятникового порядка
+  mov rdx, rcx                ; Длина для записи
+  xor rax, rax                ; Обнуляем регистр для счетчика
+
+maiatnik_loop:
+  cmp rax, rdx                ; Если все символы записаны, выходим
+  je write_sentence
+  cmp rbx, rax                ; Если счетчик равен начальной позиции k
+  je copy_char
+  inc rax
+  jmp maiatnik_loop
+
+copy_char:
+  mov al, [rsi + rbx]         ; Читаем символ из позиции k
+  mov [rdi + buf_index], al   ; Записываем символ в буфер swing_buf
+  inc buf_index               ; Увеличиваем индекс в swing_buf
+  inc rbx                     ; Переходим к следующему символу
+  inc rax                     ; Увеличиваем счетчик
+  jmp maiatnik_loop
+
+  ;; Завершаем программу
+l1:
+  call exit
+
+write_sentence:
+  push rdi
+  push rsi
+  push rax
+  push rcx
+  push rdx
+  ;call print_str
+
+  mov rax, 1                  ; Системный вызов write
+  mov rdi, r10                ; Дескриптор второго файла
+  syscall
+  pop rdx
+  pop rcx
+  pop rax
+  pop rsi
+  pop rdi
+  ret
