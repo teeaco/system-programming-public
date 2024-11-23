@@ -241,6 +241,7 @@ continue_movement:
 	je next
 	jmp mloop
 	
+	
 .decrease_speed:
 	mov rdi, [speed]
 	mov rax, 100
