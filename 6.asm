@@ -29,14 +29,20 @@ format ELF64
 
 
 	section '.bss' writable
+	var dq 1
 	x dq 0        ;; Текущая координата X
 	y dq 0        ;; Текущая координата Y
 	d_x dq 0       ;; Изменение X (1 — вправо, -1 — влево)
-	d_y dq 0       ;; Изменение Y (1 — вниз, -1 — вверх)
+	d_y dq 1       ;; Изменение Y (1 — вниз, -1 — вверх)
 	min_x dq 0    ;; Левая граница
 	max_x dq 0    ;; Правая граница
 	min_y dq 0    ;; Верхняя граница
 	max_y dq 0    ;; Нижняя граница
+	max_xx dq 0
+	max_yy dq 0
+	speed dq 1
+	s dq 0
+
 
 	xmax dq 1
 	ymax dq 1
@@ -55,20 +61,20 @@ _start:
 	;; Инициализация
 	call initscr
 
-	mov rax, [xmax]
-	dec rax
-	mov [max_x], rax         ;; Устанавливаем правую границу
-	mov rax, [ymax]
-	dec rax
-	mov [max_y], rax         ;; Устанавливаем нижнюю границу
-
 	;; Размеры экрана
 	xor rdi, rdi
 	mov rdi, [stdscr]
 	call getmaxx
-	mov [xmax], rax
+	mov [max_x], rax
+	mov [max_xx], rax
+	dec [max_x]
 	call getmaxy
-	mov [ymax], rax
+	mov [max_y], rax
+	mov [max_yy], rax
+	dec [max_y]
+	mov rbx, [max_xx]
+	mul rbx
+	mov [s], rax
 
 	call start_color
 
@@ -96,70 +102,88 @@ _start:
 	mov [palette], rax
 	mov [count], 0
         
+
 	;; движение
 mloop:
-	;; Перемещаемся в текущем направлении
-	mov rax, [x]        ;; Загружаем текущую координату X
-	mov rbx, [d_x]      ;; Загружаем направление изменения X
-	add rax, rbx        ;; Прибавляем d_x к X (перемещение по X)
-	mov [x], rax        ;; Сохраняем новое значение X
 
-	mov rax, [y]        ;; Загружаем текущую координату Y
-	mov rbx, [d_y]      ;; Загружаем направление изменения Y
-	add rax, rbx        ;; Прибавляем d_y к Y (перемещение по Y)
-	mov [y], rax        ;; Сохраняем новое значение Y
 
-	mov rax, [x]        ;; Загружаем текущую X
-	cmp rax, [min_x]    ;; Сравниваем X с левой границей
-	je .change_to_down  ;; Если X == min_x, меняем направление на вниз
+	mov r8, [var]
+	cmp r8, 1 
+	
+		jne check1
+		
+	mov rax, [y]
+	cmp rax, [max_y]
+		je change_to_right
+		;inc qword [min_x]
 
-	;; Проверяем границы и меняем направление
-	mov rax, [y]        ;; Загружаем текущую Y
-	cmp rax, [max_y]    ;; Сравниваем Y с нижней границей
-	je .change_to_right ;; Если Y == max_y, меняем направление на вправо
+	check1:
 
-	mov rax, [x]        ;; Загружаем текущую X
-	cmp rax, [max_x]    ;; Сравниваем X с правой границей
-	je .change_to_up    ;; Если X == max_x, меняем направление на вверх
+	mov r8, [var]
+	cmp r8, 2
+	jne check2
 
-	mov rax, [y]        ;; Загружаем текущую Y
-	cmp rax, [min_y]    ;; Сравниваем Y с верхней границей
-	je .change_to_left  ;; Если Y == min_y, меняем направление на влево
+	mov rax, [x]
+	cmp rax, [max_x]
+		je change_to_up
+		;dec qword [max_y]
 
-	jmp .continue_movement ;; Если границы не достигнуты, продолжаем движение
+	check2:
+	mov r8, [var]
+	cmp r8, 3
+		jne check3
+	mov rax, [y]
+	cmp rax, [min_y]
+		je change_to_left
+		;dec qword [max_x]
+	check3:
+	mov r8, [var]
+	cmp r8, 0
+	jne check4
+	mov rax, [x]
+	cmp rax, [min_x]
+		je change_to_down
+check4:
+	jmp continue_movement ;; Если границы не достигнуты, продолжаем движение
 
-.change_to_right:
+change_to_right:
+
 	mov rax, 1          ;; Устанавливаем d_x = 1 (вправо)
 	mov [d_x], rax
-	mov rax, 0          ;; Устанавливаем d_y = 0 (останавливаем движение по Y)
+	mov rax, 0         ;; Устанавливаем d_y = 0 (останавливаем движение по Y)
 	mov [d_y], rax
-	inc qword [min_y]   ;; Сужаем верхнюю границу (минус одна строка сверху)
-	jmp .continue_movement
+	mov [var], 2
+	inc qword [min_x]
+	jmp continue_movement
 
-.change_to_up:
+change_to_up:
 	mov rax, 0          ;; Устанавливаем d_x = 0 (останавливаем движение по X)
-	mov [d_x], rax
-	mov rax, -1         ;; Устанавливаем d_y = -1 (движение вверх)
+	mov [d_x], rax 
+	mov rax, -1       ;; Устанавливаем d_y = -1 (движение вверх)
 	mov [d_y], rax
-	dec qword [max_x]   ;; Сужаем правую границу (минус один столбец справа)
-	jmp .continue_movement
+	mov [var], 3
+	dec qword [max_y]
+	jmp continue_movement
 
-.change_to_left:
+change_to_left:
 	mov rax, -1         ;; Устанавливаем d_x = -1 (движение влево)
 	mov [d_x], rax
 	mov rax, 0          ;; Устанавливаем d_y = 0 (останавливаем движение по Y)
 	mov [d_y], rax
-	dec qword [max_y]   ;; Сужаем верхнюю границу (минус одна строка сверху)
-	jmp .continue_movement
+	mov [var], 0
+	dec qword [max_x]
+	jmp continue_movement
 
-.change_to_down:
+change_to_down:
 	mov rax, 0          ;; Устанавливаем d_x = 0 (останавливаем движение по X)
 	mov [d_x], rax
 	mov rax, 1          ;; Устанавливаем d_y = 1 (движение вниз)
 	mov [d_y], rax
-	inc qword [min_x]   ;; Сужаем левую границу (плюс один столбец слева)
+	mov [var], 1   ;; Сужаем левую границу (плюс один столбец слева)
+	inc qword [min_y]
+	jmp continue_movement 
 
-.continue_movement:
+continue_movement:
 	;; Перемещаем курсор в текущую позицию
 	mov rdi, [y]        ;; Передаем координату Y в rdi
 	mov rsi, [x]        ;; Передаем координату X в rsi
@@ -183,9 +207,19 @@ mloop:
 	mov  rdi,[palette]
 	call addch
 	;; 	call insch
+		;; Перемещаемся в текущем направлении
+	mov rax, [x]        ;; Загружаем текущую координату X
+	mov rbx, [d_x]      ;; Загружаем направление изменения X
+	add rax, rbx        ;; Прибавляем d_x к X (перемещение по X)
+	mov [x], rax        ;; Сохраняем новое значение X
+
+	mov rax, [y]        ;; Загружаем текущую координату Y
+	mov rbx, [d_y]      ;; Загружаем направление изменения Y
+	add rax, rbx        ;; Прибавляем d_y к Y (перемещение по Y)
+	mov [y], rax        ;; Сохраняем новое значение Y
 	
 	;; Задержка
-	mov rdi,100
+	mov rdi, [speed]
 	call mydelay
 
 	;; Обновляем экран и количество выведенных знакомест в заданной палитре
@@ -202,23 +236,26 @@ mloop:
 	call timeout
 	call getch
 	cmp rax, 'v'
-	je .increase_speed
-	cmp rax, 'b'
 	je .decrease_speed
-	cmp rax, 'q'
+	cmp rax, 'b'
 	je next
 	jmp mloop
 	
-.increase_speed:
-	mov rax, 100
-	sub rdi, rax             ;; Увеличиваем скорость (уменьшаем задержку)
-	jmp mloop
-
-
 .decrease_speed:
+	mov rdi, [speed]
 	mov rax, 100
-	add rdi, rax             ;; Уменьшаем скорость (увеличиваем задержку)
+	add rdi, rax             ;; Увеличиваем скорость (уменьшаем задержку)
+	mov [speed], rax
+	cmp rdi, 1000
+	je .null
+	.null:
+		mov [speed], 1 
+		mov rdi, [speed]
+	call mydelay
 	jmp mloop
+
+
+
 
 next:	
 	call endwin
@@ -226,7 +263,8 @@ next:
 
 ;;Анализируем количество выведенных знакомест в заданной палитре, меняем палитру, если количество больше 10000
 analiz:
-	cmp r8, 10000
+	mov rax, [s]
+	cmp r8, rax
 	jl .p
 	mov r8,[palette]
 	and r8, 0x100 
@@ -237,6 +275,19 @@ analiz:
 	mov [palette], rax
 	xor r8, r8
 	mov [count],r8
+		mov rax, [max_xx]
+		mov [max_x], rax
+		dec [max_x]
+		mov rax, [max_yy]
+		mov [max_y], rax
+		dec [max_y]
+		mov [min_x], 0
+		mov [min_y], 0
+		mov [var], 1
+		mov [d_x], 0
+		mov [d_y], 1
+		mov [y], 0
+		mov [x], 0
 	ret
 	.pp:
 	call get_digit
@@ -244,6 +295,19 @@ analiz:
 	mov [palette], rax
 	xor r8, r8
 	mov [count], r8
+		mov rax, [max_xx]
+		mov [max_x], rax
+		dec [max_x]
+		mov rax, [max_yy]
+		mov [max_y], rax
+		dec [max_y]
+		mov [min_x], 0
+		mov [min_y], 0
+		mov [var], 1
+		mov [d_x], 0
+		mov [d_y], 1
+		mov [y], 0
+		mov [x], 0
 	ret
 	.p:
 	 ret
